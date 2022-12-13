@@ -10,7 +10,6 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/namesgenerator"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -24,62 +23,69 @@ type ContainerSpec struct {
 	//container image uri volume
 	Image string
 
-	//container network name
+	//container network ids
 	Networks []string
 
 	//container environment viriables
 	Environment []string
 
-	//container mount volumes
-	Volumes []string
+	//bindings between volumes and mount points.
+	// keys are volume name and values are mount point in container e.g. test_volume => /etc
+	VolumeBinding map[string]string
 
 	//container exposed ports
 	Ports []string
 }
 
-func NewContainerSpec(image string, environment, volumes, network, ports []string) *ContainerSpec {
+func NewContainerSpec(image, name string, environment, networks, ports []string, volumeBinding map[string]string) *ContainerSpec {
 	//init the generator or you will always get the same value from GetRandomName
 	rand.Seed(time.Now().UnixNano())
 	return &ContainerSpec{
-		Name:        namesgenerator.GetRandomName(10),
-		Image:       image,
-		Environment: environment,
-		Volumes:     volumes,
-		Networks:    network,
-		Ports:       ports,
+		Name:          name, // namesgenerator.GetRandomName(10),
+		Image:         image,
+		Environment:   environment,
+		VolumeBinding: volumeBinding,
+		Networks:      networks,
+		Ports:         ports,
 	}
 }
 
-func (i *ContainerSpec) CreateContainer(ctx context.Context, cli *client.Client) (string, error) {
+func (i *ContainerSpec) CreateContainer(ctx context.Context, cli *client.Client) (ContainerStatus, error) {
 
 	createBody, err := cli.ContainerCreate(ctx, &container.Config{
 		Image:        i.Image,
 		Env:          i.Environment,
 		ExposedPorts: dockerExposedPorts(i.Ports),
 	}, &container.HostConfig{
-		Mounts:       dockerVolumes(i.Volumes),
+		Mounts:       dockerVolumes(i.VolumeBinding),
 		PortBindings: dockerPortsBinding(i.Ports),
 	}, &network.NetworkingConfig{
 		EndpointsConfig: dockerNetwork(i.Networks),
 	}, &v1.Platform{}, i.Name)
 
 	if err != nil {
-		return "", err
+		return ContainerStatus{}, err
 	}
 
 	fmt.Printf("---> created container id: %s\n", createBody.ID)
 
-	return createBody.ID, nil
+	return ContainerStatus{
+		ID:    createBody.ID,
+		Name:  i.Name,
+		Image: i.Image,
+	}, nil
+
+	//return createBody.ID, nil
 
 }
 
-func (i *ContainerSpec) StartContainer(ctx context.Context, cli *client.Client, id string) (ContainerInfo, error) {
+func (i *ContainerSpec) StartContainer(ctx context.Context, cli *client.Client, id string) (ContainerStatus, error) {
 	fmt.Printf("---> stating container: %s\n", id)
 	if err := cli.ContainerStart(ctx, id, types.ContainerStartOptions{}); err != nil {
-		return ContainerInfo{}, err
+		return ContainerStatus{}, err
 	}
 
-	return ContainerInfo{
+	return ContainerStatus{
 		ID:        id,
 		Name:      i.Name,
 		CreatedAt: time.Now(),

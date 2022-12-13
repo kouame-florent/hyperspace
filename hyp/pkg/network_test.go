@@ -2,43 +2,10 @@ package hyp_test
 
 import (
 	"context"
-	"os/exec"
 	"testing"
 
-	"github.com/docker/docker/client"
 	hyp "github.com/kouame-florent/hyperspace/hyp/pkg"
 )
-
-/*
-func TestMain(m *testing.M) {
-
-
-
-}
-*/
-
-func createClient(t *testing.T) (*client.Client, error) {
-
-	client.NewClientWithOpts()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-
-	t.Cleanup(func() {
-		cli.Close()
-	})
-
-	return cli, nil
-}
-
-func createNetworkCleanUp(t *testing.T, name string) {
-	err := runCmd("docker", []string{"network", "rm", name})
-	if err != nil {
-		t.Fatal(err)
-	}
-}
 
 func TestCreateNetwork(t *testing.T) {
 	ctx := context.Background()
@@ -47,22 +14,27 @@ func TestCreateNetwork(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	netName := "test_network"
+	expected := "test_network"
 
 	spec := hyp.NetworkSpec{
-		Name: netName,
+		Name: expected,
 	}
 
-	info, err := spec.CreateNetwork(ctx, cli)
+	inf, err := spec.CreateNetwork(ctx, cli)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if info.ID == "" {
-		t.Fatal(err)
+	if inf.ID == "" {
+		t.Fatal("Expected id, got empty string")
 	}
 
-	createNetworkCleanUp(t, netName)
+	if inf.Name != expected {
+		t.Fatalf("Expected %s, got %s", expected, inf.Name)
+	}
+
+	cmdNetworkRemove(t, expected)
+
 }
 
 func TestRemoveNetwork(t *testing.T) {
@@ -78,24 +50,18 @@ func TestRemoveNetwork(t *testing.T) {
 		Name: netName,
 	}
 
-	cinfo, err := spec.CreateNetwork(ctx, cli)
+	cres, err := spec.CreateNetwork(ctx, cli)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cinfo.ID == "" {
+	if cres.ID == "" {
 		t.Fatal(err)
 	}
 
-	err = cinfo.RemoveNetwork(ctx, cli)
+	err = cres.RemoveNetwork(ctx, cli)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-}
-
-func runCmd(command string, args []string) error {
-	cmd := exec.Command(command, args...)
-	return cmd.Run()
 
 }

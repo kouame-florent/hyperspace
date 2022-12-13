@@ -6,7 +6,6 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/go-connections/nat"
-	"github.com/google/uuid"
 )
 
 // convert ports slice to docker nat.PortSet
@@ -43,10 +42,11 @@ func dockerPortsBinding(ports []string) nat.PortMap {
 
 }
 
+/*
 // build docker volumes mount with targets names
-func dockerVolumes(volumes []string) []mount.Mount {
+func dockerVolumes(targets []string) []mount.Mount {
 	mnt := []mount.Mount{}
-	for _, v := range volumes {
+	for _, v := range targets {
 		m := mount.Mount{
 			Type:   mount.TypeVolume,
 			Source: dockerVolumeSource(),
@@ -57,11 +57,30 @@ func dockerVolumes(volumes []string) []mount.Mount {
 
 	return mnt
 }
+*/
 
+// keys are volume name and values are mount point in container e.g. test_volume => /etc
+func dockerVolumes(volumeBinding map[string]string) []mount.Mount {
+	mnt := []mount.Mount{}
+	for k, v := range volumeBinding {
+		m := mount.Mount{
+			Type:   mount.TypeVolume,
+			Source: k,
+			Target: v,
+		}
+
+		mnt = append(mnt, m)
+	}
+
+	return mnt
+}
+
+/*
 // produce docker volume source name
 func dockerVolumeSource() string {
 	return uuid.NewString()
 }
+*/
 
 func dockerNetwork(networks []string) map[string]*network.EndpointSettings {
 	endPoints := map[string]*network.EndpointSettings{}

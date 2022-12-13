@@ -26,33 +26,34 @@ type Bundle struct {
 func NewBundle(name string, descripton string, networks []string, containerSpecs []ContainerSpec) *Bundle {
 
 	//change all container network for bundle ones
-	configs := changeNetwork(containerSpecs, networks)
+	//configs := changeNetwork(containerSpecs, networks)
 
 	return &Bundle{
 		ID:             uuid.New().String(),
 		Name:           name,
 		Networks:       networks,
 		Description:    descripton,
-		ContainerSpecs: configs,
+		ContainerSpecs: containerSpecs,
+		//ContainerSpecs: configs,
 	}
 }
 
 // create and start each container from the bundle and give them the same network id.
 // return info from running container
-func (b *Bundle) Deploy(ctx context.Context, cli *client.Client) ([]ContainerInfo, error) {
-	ctnInfos := []ContainerInfo{}
+func (b *Bundle) Deploy(ctx context.Context, cli *client.Client) ([]ContainerStatus, error) {
+	ctnInfos := []ContainerStatus{}
 	for _, o := range b.ContainerSpecs {
 
 		//create container
-		id, err := o.CreateContainer(ctx, cli)
+		cinf, err := o.CreateContainer(ctx, cli)
 		if err != nil {
-			return []ContainerInfo{}, err
+			return []ContainerStatus{}, err
 		}
 
 		//start container
-		inf, err := o.StartContainer(ctx, cli, id)
+		inf, err := o.StartContainer(ctx, cli, cinf.ID)
 		if err != nil {
-			return []ContainerInfo{}, err
+			return []ContainerStatus{}, err
 		}
 
 		ctnInfos = append(ctnInfos, inf)
@@ -62,6 +63,7 @@ func (b *Bundle) Deploy(ctx context.Context, cli *client.Client) ([]ContainerInf
 	return ctnInfos, nil
 }
 
+/*
 // add image of other to bundle b and concactenate names and description
 func (b *Bundle) Add(other *Bundle) *Bundle {
 	//change new added containers networks
@@ -73,7 +75,9 @@ func (b *Bundle) Add(other *Bundle) *Bundle {
 
 	return b
 }
+*/
 
+/*
 func changeNetwork(containerConfigs []ContainerSpec, networks []string) []ContainerSpec {
 
 	configs := containerConfigs
@@ -87,3 +91,4 @@ func changeNetwork(containerConfigs []ContainerSpec, networks []string) []Contai
 	return configs
 
 }
+*/

@@ -1,38 +1,33 @@
 package main
 
-import (
-	"context"
-	"fmt"
-
-	"github.com/docker/docker/client"
-	"github.com/google/uuid"
-	hyp "github.com/kouame-florent/hyperspace/hyp/pkg"
-)
-
 func main() {
 
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-	defer cli.Close()
-
-	quarkusBD := quarkusBundle(ctx, cli)
-	mariadbBD := mariadbBundle(ctx, cli)
-
-	bundles := []*hyp.Bundle{quarkusBD, mariadbBD}
-
-	for _, b := range bundles {
-		_, err := b.Deploy(ctx, cli)
+	/*
+		ctx := context.Background()
+		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 		if err != nil {
 			panic(err)
 		}
-	}
+		defer cli.Close()
 
+		quarkusBD := quarkusBundle(ctx, cli)
+		mariadbBD := mariadbBundle(ctx, cli)
+
+		bundles := []*hyp.Bundle{quarkusBD, mariadbBD}
+
+		for _, b := range bundles {
+			_, err := b.Deploy(ctx, cli)
+			if err != nil {
+				panic(err)
+			}
+		}
+	*/
 }
 
+/*
+
 func quarkusBundle(ctx context.Context, cli *client.Client) *hyp.Bundle {
+
 
 	env := []string{
 		"PUID=1000",
@@ -119,3 +114,4 @@ func adminerBundle(ctx context.Context, cli *client.Client) *hyp.Bundle {
 	return bundle
 
 }
+*/

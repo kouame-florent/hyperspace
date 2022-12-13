@@ -7,26 +7,32 @@ import (
 	"github.com/docker/docker/client"
 )
 
+// network specification to create a network resource in engine
 type NetworkSpec struct {
-	//ID   string
+	SpecMeta
 	Name string
 }
 
-func NewNetworSpec(name string) *NetworkSpec {
+func NewNetworkSpec(name string) *NetworkSpec {
 	return &NetworkSpec{
 		Name: name,
 	}
 }
 
-func (n *NetworkSpec) CreateNetwork(ctx context.Context, cli *client.Client) (*NetworkInfo, error) {
+func (n *NetworkSpec) CreateNetwork(ctx context.Context, cli *client.Client) (*NetworkStatus, error) {
 
 	resp, err := cli.NetworkCreate(ctx, n.Name, types.NetworkCreate{
 		Attachable:     true,
 		CheckDuplicate: true,
 	})
 	if err != nil {
-		return &NetworkInfo{}, err
+		return &NetworkStatus{}, err
 	}
-	return &NetworkInfo{ID: resp.ID, Name: n.Name}, nil
+
+	return &NetworkStatus{
+		StatusMeta: StatusMeta{
+			ID: resp.ID,
+		},
+		Name: n.Name}, nil
 
 }
