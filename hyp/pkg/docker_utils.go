@@ -42,27 +42,10 @@ func dockerPortsBinding(ports []string) nat.PortMap {
 
 }
 
-/*
-// build docker volumes mount with targets names
-func dockerVolumes(targets []string) []mount.Mount {
+// keys are volumes (source) in engine and values are mount points (target)
+func dockerVolumesMounts(volumesBindings map[string]string) []mount.Mount {
 	mnt := []mount.Mount{}
-	for _, v := range targets {
-		m := mount.Mount{
-			Type:   mount.TypeVolume,
-			Source: dockerVolumeSource(),
-			Target: v,
-		}
-		mnt = append(mnt, m)
-	}
-
-	return mnt
-}
-*/
-
-// keys are volume name and values are mount point in container e.g. test_volume => /etc
-func dockerVolumes(volumeBinding map[string]string) []mount.Mount {
-	mnt := []mount.Mount{}
-	for k, v := range volumeBinding {
+	for k, v := range volumesBindings {
 		m := mount.Mount{
 			Type:   mount.TypeVolume,
 			Source: k,
@@ -75,18 +58,11 @@ func dockerVolumes(volumeBinding map[string]string) []mount.Mount {
 	return mnt
 }
 
-/*
-// produce docker volume source name
-func dockerVolumeSource() string {
-	return uuid.NewString()
-}
-*/
-
-func dockerNetwork(networks []string) map[string]*network.EndpointSettings {
+func dockerNetworkEndPoints(networks []NetworkObject) map[string]*network.EndpointSettings {
 	endPoints := map[string]*network.EndpointSettings{}
 
-	for _, n := range networks {
-		endPoints[n] = &network.EndpointSettings{NetworkID: n}
+	for _, o := range networks {
+		endPoints[o.Name] = &network.EndpointSettings{NetworkID: o.Name}
 	}
 
 	return endPoints

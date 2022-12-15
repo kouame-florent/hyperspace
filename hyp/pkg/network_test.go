@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	hyp "github.com/kouame-florent/hyperspace/hyp/pkg"
 )
 
@@ -16,21 +17,19 @@ func TestCreateNetwork(t *testing.T) {
 
 	expected := "test_network"
 
-	spec := hyp.NetworkSpec{
-		Name: expected,
-	}
+	spec := hyp.NewNetworkSpec(uuid.NewString(), expected)
 
-	inf, err := spec.CreateNetwork(ctx, cli)
+	nobj, err := spec.CreateNetwork(ctx, cli, expected)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if inf.ID == "" {
+	if nobj.UID == "" {
 		t.Fatal("Expected id, got empty string")
 	}
 
-	if inf.Name != expected {
-		t.Fatalf("Expected %s, got %s", expected, inf.Name)
+	if nobj.Name != expected {
+		t.Fatalf("Expected %s, got %s", expected, nobj.Name)
 	}
 
 	cmdNetworkRemove(t, expected)
@@ -46,16 +45,14 @@ func TestRemoveNetwork(t *testing.T) {
 
 	netName := "test_network"
 
-	spec := hyp.NetworkSpec{
-		Name: netName,
-	}
+	spec := hyp.NewNetworkSpec(uuid.NewString(), netName)
 
-	cres, err := spec.CreateNetwork(ctx, cli)
+	cres, err := spec.CreateNetwork(ctx, cli, netName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cres.ID == "" {
+	if cres.UID == "" {
 		t.Fatal(err)
 	}
 

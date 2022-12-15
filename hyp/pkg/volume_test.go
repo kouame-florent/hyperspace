@@ -18,7 +18,7 @@ func TestCreateVolume(t *testing.T) {
 	expected := "test_volume"
 
 	spec := hyp.NewVolumeSpec(uuid.NewString(), expected)
-	rsrc, err := spec.CreateVolume(ctx, cli)
+	rsrc, err := spec.CreateVolume(ctx, cli, expected)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestRemoveVolume(t *testing.T) {
 	expected := "test_volume"
 
 	spec := hyp.NewVolumeSpec(uuid.NewString(), expected)
-	cinf, err := spec.CreateVolume(ctx, cli)
+	cinf, err := spec.CreateVolume(ctx, cli, expected)
 	if err != nil {
 		t.Fatal(err)
 	}

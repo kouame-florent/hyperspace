@@ -2,27 +2,33 @@ package hyp
 
 import "time"
 
-type state = string
+type status = string
 
 const (
 	//created, restarting, running, removing, paused, exited, or dead
 
-	running  state = "running"
-	created  state = "created"
-	stopped  state = "stopped"
-	removing state = "removing"
+	Running  status = "running"
+	Created  status = "created"
+	Stopped  status = "stopped"
+	Removing status = "removing"
 )
 
-type StatusMeta struct {
-	ID        string
+type ObjectMeta struct {
+	// UID from container engine if applicable
+	UID string
+	// Object name in container engine
+	Name      string
 	CreatedAt time.Time
 	DeletedAt time.Time
 	Labels    map[string]string
-	Stat      state
+	Status    status
 }
 
 type SpecMeta struct {
-	ID        string
+	// ID for persistence
+	ID string
+	// User defined name
+	Tag       string
 	CreatedAt time.Time
 	DeletedAt time.Time
 	Labels    map[string]string

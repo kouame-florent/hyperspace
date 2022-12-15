@@ -8,7 +8,7 @@ import (
 	hyp "github.com/kouame-florent/hyperspace/hyp/pkg"
 )
 
-func TestContainer(t *testing.T) {
+func TestCreateContainer(t *testing.T) {
 	ctx := context.Background()
 	cli, err := createClient(t)
 	if err != nil {
@@ -26,13 +26,13 @@ func TestContainer(t *testing.T) {
 	image := "nginx:1.23.2-alpine"
 	name := "alpine_container"
 
-	contSpec := hyp.NewContainerSpec(image, name, env, []string{}, ports, map[string]string{})
-	cinf, err := contSpec.CreateContainer(ctx, cli)
+	contSpec := hyp.NewContainerSpec(uuid.NewString(), image, name, env, ports, map[string]hyp.VolumeSpec{}, []hyp.NetworkSpec{})
+	cinf, err := contSpec.CreateContainer(ctx, cli, name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cinf.ID == "" {
+	if cinf.UID == "" {
 		t.Fatal(err)
 	}
 
@@ -48,16 +48,18 @@ func TestCreateContainerWithNetwork(t *testing.T) {
 
 	netName := "alpine_network"
 
-	netSpec := hyp.NewNetworkSpec(netName)
+	nsp := hyp.NewNetworkSpec(uuid.NewString(), netName)
 
-	netInfo, err := netSpec.CreateNetwork(ctx, cli)
-	if err != nil {
-		t.Fatal(err)
-	}
+	/*
+		_, err = nsp.CreateNetwork(ctx, cli, netName)
+		if err != nil {
+			t.Fatal(err)
+		}
+	*/
 
-	networks := []string{netInfo.ID}
+	netSpecs := []hyp.NetworkSpec{*nsp}
 
-	volBindings := map[string]string{}
+	volBindings := map[string]hyp.VolumeSpec{}
 
 	env := []string{
 		"NGINX_PORT=80",
@@ -68,20 +70,20 @@ func TestCreateContainerWithNetwork(t *testing.T) {
 	}
 
 	image := "nginx:1.23.2-alpine"
-	name := "alpine_container"
+	ctnName := "alpine_container"
 
-	contSpec := hyp.NewContainerSpec(image, name, env, networks, ports, volBindings)
-	cinf, err := contSpec.CreateContainer(ctx, cli)
+	contSpec := hyp.NewContainerSpec(uuid.NewString(), image, ctnName, env, ports, volBindings, netSpecs)
+	cinf, err := contSpec.CreateContainer(ctx, cli, ctnName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cinf.ID == "" {
+	if cinf.UID == "" {
 		t.Fatal(err)
 	}
 
-	cmdNetworkRemove(t, "alpine_network")
-	cmdContainerRemove(t, name)
+	cmdNetworkRemove(t, netName)
+	cmdContainerRemove(t, ctnName)
 
 }
 
@@ -95,12 +97,19 @@ func TestCreateContainerWithVolume(t *testing.T) {
 	volName := "alpine_volume"
 
 	volSpec := hyp.NewVolumeSpec(uuid.NewString(), volName)
-	_, err = volSpec.CreateVolume(ctx, cli)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	networks := []string{}
+	/*
+		_, err = volSpec.CreateVolume(ctx, cli, volName)
+		if err != nil {
+			t.Fatal(err)
+		}
+	*/
+
+	netSpecs := []hyp.NetworkSpec{}
+
+	volBindings := map[string]hyp.VolumeSpec{
+		"/usr/share/nginx/html": *volSpec,
+	}
 
 	env := []string{
 		"NGINX_PORT=80",
@@ -113,20 +122,58 @@ func TestCreateContainerWithVolume(t *testing.T) {
 	image := "nginx:1.23.2-alpine"
 	name := "alpine_container"
 
-	volBindings := map[string]string{
-		volSpec.Name: "/usr/share/nginx/html",
-	}
-
-	contSpec := hyp.NewContainerSpec(image, name, env, networks, ports, volBindings)
-	cRsrc, err := contSpec.CreateContainer(ctx, cli)
+	contSpec := hyp.NewContainerSpec(uuid.NewString(), image, name, env, ports, volBindings, netSpecs)
+	cRsrc, err := contSpec.CreateContainer(ctx, cli, name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cRsrc.ID == "" {
+	if cRsrc.UID == "" {
 		t.Fatal(err)
 	}
 
 	cmdContainerRemove(t, name)
-	cmdVolumeRemove(t, name)
+	cmdVolumeRemove(t, volName)
+}
+
+func TestStartContainer(t *testing.T) {
+	ctx := context.Background()
+	cli, err := createClient(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	env := []string{
+		"NGINX_PORT=80",
+	}
+
+	ports := []string{
+		"80/tcp",
+	}
+
+	image := "nginx:1.23.2-alpine"
+	name := "alpine_container"
+
+	contSpec := hyp.NewContainerSpec(uuid.NewString(), image, name, env, ports, map[string]hyp.VolumeSpec{}, []hyp.NetworkSpec{})
+	cobj, err := contSpec.CreateContainer(ctx, cli, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cobj.UID == "" {
+		t.Fatal(err)
+	}
+
+	robj, err := cobj.StartContainer(ctx, cli)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if robj.UID == "" {
+		t.Fatal(err)
+	}
+
+	cmdContainerStop(t, name)
+	cmdContainerRemove(t, name)
+
 }

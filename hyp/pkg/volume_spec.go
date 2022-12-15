@@ -11,38 +11,32 @@ import (
 
 type VolumeSpec struct {
 	SpecMeta
-
-	//name of the volume object
-	Name string
-
-	//mount path on the host
-	MountPoint string
 }
 
-func NewVolumeSpec(id, name string) *VolumeSpec {
+func NewVolumeSpec(id, tag string) *VolumeSpec {
 	return &VolumeSpec{
 		SpecMeta: SpecMeta{
 			ID:        id,
+			Tag:       tag,
 			CreatedAt: time.Now(),
 		},
-		Name: name,
 	}
 }
 
-func (v *VolumeSpec) CreateVolume(ctx context.Context, cli *client.Client) (VolumeStatus, error) {
+func (v *VolumeSpec) CreateVolume(ctx context.Context, cli *client.Client, name string) (VolumeObject, error) {
 	vol, err := cli.VolumeCreate(ctx, volume.VolumeCreateBody{
-		Name: v.Name,
+		Name: name,
 	})
 	if err != nil {
-		return VolumeStatus{}, err
+		return VolumeObject{}, err
 	}
 
-	volRsrc := VolumeStatus{
-		StatusMeta: StatusMeta{
+	volRsrc := VolumeObject{
+		ObjectMeta: ObjectMeta{
 			CreatedAt: time.Now(),
+			Name:      vol.Name,
 		},
 
-		Name:       vol.Name,
 		MountPoint: vol.Mountpoint,
 	}
 
