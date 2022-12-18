@@ -73,16 +73,16 @@ func TestCreateContainerWithNetwork(t *testing.T) {
 	ctnName := "alpine_container"
 
 	contSpec := hyp.NewContainerSpec(uuid.NewString(), image, ctnName, env, ports, volBindings, netSpecs)
-	cinf, err := contSpec.CreateContainer(ctx, cli, ctnName)
+	cobj, err := contSpec.CreateContainer(ctx, cli, ctnName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cinf.UID == "" {
+	if cobj.UID == "" {
 		t.Fatal(err)
 	}
 
-	cmdNetworkRemove(t, netName)
+	cmdNetworkRemove(t, cobj.Networks[0].Name)
 	cmdContainerRemove(t, ctnName)
 
 }
@@ -106,9 +106,10 @@ func TestCreateContainerWithVolume(t *testing.T) {
 	*/
 
 	netSpecs := []hyp.NetworkSpec{}
+	mountPt := "/usr/share/nginx/html"
 
 	volBindings := map[string]hyp.VolumeSpec{
-		"/usr/share/nginx/html": *volSpec,
+		mountPt: *volSpec,
 	}
 
 	env := []string{
@@ -123,17 +124,17 @@ func TestCreateContainerWithVolume(t *testing.T) {
 	name := "alpine_container"
 
 	contSpec := hyp.NewContainerSpec(uuid.NewString(), image, name, env, ports, volBindings, netSpecs)
-	cRsrc, err := contSpec.CreateContainer(ctx, cli, name)
+	cobj, err := contSpec.CreateContainer(ctx, cli, name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if cRsrc.UID == "" {
+	if cobj.UID == "" {
 		t.Fatal(err)
 	}
 
 	cmdContainerRemove(t, name)
-	cmdVolumeRemove(t, volName)
+	cmdVolumeRemove(t, cobj.Volumes[mountPt].Name)
 }
 
 func TestStartContainer(t *testing.T) {

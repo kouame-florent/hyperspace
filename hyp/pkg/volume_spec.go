@@ -35,6 +35,7 @@ func (v *VolumeSpec) CreateVolume(ctx context.Context, cli *client.Client, name 
 		ObjectMeta: ObjectMeta{
 			CreatedAt: time.Now(),
 			Name:      vol.Name,
+			SpecID:    v.ID,
 		},
 
 		MountPoint: vol.Mountpoint,

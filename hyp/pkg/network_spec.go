@@ -37,8 +37,9 @@ func (n *NetworkSpec) CreateNetwork(ctx context.Context, cli *client.Client, nam
 
 	return &NetworkObject{
 		ObjectMeta: ObjectMeta{
-			UID:  resp.ID,
-			Name: name,
+			UID:    resp.ID,
+			Name:   name,
+			SpecID: n.ID,
 		},
 	}, nil
 

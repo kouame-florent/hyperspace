@@ -16,6 +16,8 @@ const (
 type ObjectMeta struct {
 	// UID from container engine if applicable
 	UID string
+	//parent spec ID
+	SpecID string
 	// Object name in container engine
 	Name      string
 	CreatedAt time.Time

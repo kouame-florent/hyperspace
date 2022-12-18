@@ -1,55 +1,64 @@
 package hyp
 
+import (
+	"context"
+
+	"github.com/docker/docker/client"
+)
+
 // aggregate container specs in same package
 type BundleSpec struct {
 	SpecMeta
-	Name string
+	//Name string
 
 	//networks used by all containers in the bundle
-	Networks    []string
+	Networks    []NetworkSpec
 	Description string
 
-	ContainerSpecs []ContainerSpec
+	ContainerSpecs []*ContainerSpec
 }
 
-func NewBundleSpec(name string, descripton string, networks []string, containerSpecs []ContainerSpec) *BundleSpec {
+func NewBundleSpec(name string, descripton string, networks []NetworkSpec, containerSpecs []*ContainerSpec) *BundleSpec {
 
-	//change all container network for bundle ones
-	//configs := changeNetwork(containerSpecs, networks)
+	//set all container network for bundle ones
+	/*
+		for _, cs := range containerSpecs {
+			cs.Networks = networks
 
+		}
+	*/
 	return &BundleSpec{
 
-		Name:           name,
 		Networks:       networks,
 		Description:    descripton,
 		ContainerSpecs: containerSpecs,
-		//ContainerSpecs: configs,
 	}
 }
 
-/*
-// create and start each container from the bundle and give them the same network id.
-// return info from running container
-func (b *BundleSpec) Deploy(ctx context.Context, cli *client.Client) ([]ContainerObject, error) {
-	ctnInfos := []ContainerObject{}
-	for _, o := range b.ContainerSpecs {
+// create and start each container from the bundle
+// return object from running container
+func (b *BundleSpec) Deploy(ctx context.Context, cli *client.Client) ([]*ContainerObject, error) {
+	/*
+		objs := []ContainerObject{}
+		for _, s := range b.ContainerSpecs {
 
-		//create container
-		cinf, err := o.CreateContainer(ctx, cli)
-		if err != nil {
-			return []ContainerObject{}, err
+			//create container
+			obj, err := s.CreateContainer(ctx, cli)
+			if err != nil {
+				return []*ContainerObject{}, err
+			}
+
+			//start container
+			inf, err := o.StartContainer(ctx, cli, cinf.ID)
+			if err != nil {
+				return []ContainerObject{}, err
+			}
+
+			ctnInfos = append(ctnInfos, inf)
 		}
 
-		//start container
-		inf, err := o.StartContainer(ctx, cli, cinf.ID)
-		if err != nil {
-			return []ContainerObject{}, err
-		}
-
-		ctnInfos = append(ctnInfos, inf)
-	}
-
-	fmt.Printf("---> INFO LENGHT: %d", len(ctnInfos))
-	return ctnInfos, nil
+		fmt.Printf("---> INFO LENGHT: %d", len(ctnInfos))
+		return ctnInfos, nil
+	*/
+	return []*ContainerObject{}, nil
 }
-*/

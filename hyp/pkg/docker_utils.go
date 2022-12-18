@@ -42,14 +42,14 @@ func dockerPortsBinding(ports []string) nat.PortMap {
 
 }
 
-// keys are volumes (source) in engine and values are mount points (target)
-func dockerVolumesMounts(volumesBindings map[string]string) []mount.Mount {
+// keys are mount points (target) in engine and values are volumes objects (source)
+func dockerVolumesMounts(volumesBindings map[string]VolumeObject) []mount.Mount {
 	mnt := []mount.Mount{}
 	for k, v := range volumesBindings {
 		m := mount.Mount{
 			Type:   mount.TypeVolume,
-			Source: k,
-			Target: v,
+			Source: v.Name,
+			Target: k,
 		}
 
 		mnt = append(mnt, m)

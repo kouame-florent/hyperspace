@@ -6,14 +6,17 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 )
 
 type ContainerObject struct {
 	ObjectMeta
-	Image string
-	//Network   NetworkInfo
-	//Volume    VolumeInfo
+	Image    string
+	Networks []NetworkObject
+	//bindings between mount points and engine volumes
+	//keys are container mount point e.g. /config, /var/lib/html and values are volume objects
+	Volumes   map[string]VolumeObject
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -33,11 +36,15 @@ func (c *ContainerObject) StartContainer(ctx context.Context, cli *client.Client
 	return c, nil
 }
 
-/*
-func (i *ContainerObject) ConnectToNetwork(ctx context.Context, cli *client.Client, networkID string) {
-	cli.NetworkConnect(ctx, networkID, i.ID, &network.EndpointSettings{})
+func (c *ContainerObject) ConnectToNetwork(ctx context.Context, cli *client.Client, networkID string) error {
+	err := cli.NetworkConnect(ctx, networkID, c.UID, &network.EndpointSettings{})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
-*/
 
 /*
 func (b *BundleInfo) StopBundle() {
