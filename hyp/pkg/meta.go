@@ -14,16 +14,10 @@ const (
 )
 
 type ObjectMeta struct {
-	// UID from container engine if applicable
-	UID string
-	//parent spec ID
-	SpecID string
-	// Object name in container engine
+	UID       string
 	Name      string
 	CreatedAt time.Time
-	DeletedAt time.Time
-	Labels    map[string]string
-	Status    status
+	UpdatedAt time.Time
 }
 
 type SpecMeta struct {
@@ -32,6 +26,5 @@ type SpecMeta struct {
 	// User defined name
 	Tag       string
 	CreatedAt time.Time
-	DeletedAt time.Time
-	Labels    map[string]string
+	UpdatedAt time.Time
 }
