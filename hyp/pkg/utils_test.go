@@ -1,12 +1,6 @@
 package hyp_test
 
-import (
-	"log"
-	"os/exec"
-	"testing"
-
-	"github.com/docker/docker/client"
-)
+/*
 
 func runCmd(command string, args []string) error {
 	cmd := exec.Command(command, args...)
@@ -88,3 +82,4 @@ func cmdContainerRemove(t *testing.T, name string) {
 		t.Fatal(err)
 	}
 }
+*/

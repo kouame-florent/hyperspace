@@ -20,11 +20,9 @@ type ObjectMeta struct {
 	UpdatedAt time.Time
 }
 
-type SpecMeta struct {
-	// ID for persistence
-	ID string
-	// User defined name
-	Tag       string
+type TemplateMeta struct {
+	Name      string
+	Namespace string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

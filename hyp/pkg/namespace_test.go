@@ -15,7 +15,9 @@ func TestCreateNamespace(t *testing.T) {
 
 	expected := "test_namesapce"
 
-	nsObj, err := hyp.CreateNamespace(context.Background(), fakeCli, expected)
+	nsTpl := hyp.NewNamespaceTemplate(expected)
+
+	nsObj, err := nsTpl.CreateNamespace(context.Background(), fakeCli)
 	if err != nil {
 		t.Fatalf("error when creating namespace: %v", err)
 	}
