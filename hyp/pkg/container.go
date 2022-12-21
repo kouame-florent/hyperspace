@@ -8,16 +8,25 @@ type ContainerTemplate struct {
 	TemplateMeta
 	Image        string
 	Ports        []int32
-	VolumeMounts []volumeMount
+	VolumeMounts []VolumeMountTemplate
 }
 
-type volumeMount struct {
+type VolumeMountTemplate struct {
+	// mount name is the same as volume claim name
 	Name      string
 	MountPath string
 	ReadOnly  bool
 }
 
-func NewContainerTemplate(name, namespace, image string, volumeMounts []volumeMount) ContainerTemplate {
+func NewVolumemountTemplate(name, mountPath string, readOnly bool) VolumeMountTemplate {
+	return VolumeMountTemplate{
+		Name:      name,
+		MountPath: mountPath,
+		ReadOnly:  readOnly,
+	}
+}
+
+func NewContainerTemplate(name, namespace, image string, volumeMounts []VolumeMountTemplate) ContainerTemplate {
 	return ContainerTemplate{
 		TemplateMeta: TemplateMeta{
 			Name:      name,

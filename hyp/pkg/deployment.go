@@ -20,16 +20,16 @@ type DeploymentObject struct {
 
 type DeploymentTemplate struct {
 	TemplateMeta
-	Containers []ContainerTemplate
+	Pod PodTemplate
 }
 
-func NewDeploymentTemplate(name, namespace string, containers []ContainerTemplate) DeploymentTemplate {
+func NewDeploymentTemplate(name, namespace string, pod PodTemplate) DeploymentTemplate {
 	return DeploymentTemplate{
 		TemplateMeta: TemplateMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Containers: containers,
+		Pod: pod,
 	}
 }
 
@@ -54,7 +54,8 @@ func (d *DeploymentTemplate) CreateDeployment(ctx context.Context, cls kubernete
 					},
 				},
 				Spec: apiv1.PodSpec{
-					Containers: containers(d.Containers),
+					Containers: containers(d.Pod.Containers),
+					Volumes:    volumes(d.Pod.Volumes),
 				},
 			},
 		},
@@ -77,17 +78,32 @@ func containers(tpls []ContainerTemplate) []apiv1.Container {
 
 	ctns := []apiv1.Container{}
 
-	for _, tp := range tpls {
+	for _, ctp := range tpls {
+
 		ct := apiv1.Container{
-			Name:  tp.Name,
-			Image: tp.Image,
-			Ports: containerPorts(tp.Ports),
+			Name:         ctp.Name,
+			Image:        ctp.Image,
+			Ports:        containerPorts(ctp.Ports),
+			VolumeMounts: volumeMount(ctp.VolumeMounts),
 		}
 
 		ctns = append(ctns, ct)
 	}
-
 	return ctns
+}
+
+func volumeMount(vmtpls []VolumeMountTemplate) []apiv1.VolumeMount {
+	volMounts := []apiv1.VolumeMount{}
+	for _, vtpl := range vmtpls {
+		volMount := apiv1.VolumeMount{
+			Name:      vtpl.Name,
+			MountPath: vtpl.MountPath,
+			ReadOnly:  vtpl.ReadOnly,
+		}
+		volMounts = append(volMounts, volMount)
+	}
+
+	return volMounts
 }
 
 func containerPorts(ports []int32) []apiv1.ContainerPort {
@@ -104,4 +120,23 @@ func containerPorts(ports []int32) []apiv1.ContainerPort {
 	}
 
 	return ctnPorts
+}
+
+func volumes(vtpls []VolumeTemplate) []apiv1.Volume {
+	volumes := []apiv1.Volume{}
+
+	for _, vtpl := range vtpls {
+		vol := apiv1.Volume{
+			Name: vtpl.Name,
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: vtpl.Name,
+				},
+			},
+		}
+
+		volumes = append(volumes, vol)
+	}
+
+	return volumes
 }
